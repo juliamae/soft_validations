@@ -2,12 +2,13 @@ module SoftValidations
   module Validations
     def self.included(base)
       base.extend ClassMethods
+			base.define_callbacks :soft_validate
     end
   
     # Returns true if there are no messages in the warnings collection. 
     def complete?
       warnings.clear
-      run_validations :soft_validate
+      run_callbacks :soft_validate
       warnings.empty?
     end
   
@@ -47,10 +48,7 @@ module SoftValidations
       #       e.warnings.add(:first_name, "shouldn't be blank") unless e.attribute_present?(:first_name)
       #     end
       #   end
-      def soft_validate(*methods, &block)
-        methods << block if block_given?
-        write_inheritable_set(:soft_validate, methods)
-      end
+
     end
   end
 end

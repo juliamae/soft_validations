@@ -4,29 +4,29 @@ class Employee < ActiveRecord::Base; end
 class SoftValidationsTest < Test::Unit::TestCase
   
   def setup
-    Employee.send :write_inheritable_attribute, :soft_validate, nil
+		Employee.instance_variable_set(:@soft_validate_callbacks, nil)
     assert_nil soft_validate_set
   end
   
   def soft_validate_set
-    Employee.send :read_inheritable_attribute, :soft_validate
+    Employee.instance_variable_get :@soft_validate_callbacks
   end
   
   def test_soft_validate_with_method
     Employee.soft_validate :recommend_first_name_not_blank
     
     assert_equal 1, soft_validate_set.length
-    assert_equal [:recommend_first_name_not_blank], soft_validate_set
+    assert_equal :recommend_first_name_not_blank, soft_validate_set.first.instance_variable_get(:@method)
     
     Employee.soft_validate :recommend_hire_date_not_blank
     
     assert_equal 2, soft_validate_set.length
-    assert_equal [:recommend_first_name_not_blank, :recommend_hire_date_not_blank], soft_validate_set
+    assert_equal [:recommend_first_name_not_blank, :recommend_hire_date_not_blank], soft_validate_set.map{|c| c.instance_variable_get(:@method)}
   end
   
   def test_soft_validate_with_block
     Employee.soft_validate { |e| e.warnings.add_to_base("This is a warning!") }
-    assert_equal Proc, soft_validate_set[0].class
+    assert_equal Proc, soft_validate_set.first.instance_variable_get(:@method).class
   end
   
   def test_complete?
